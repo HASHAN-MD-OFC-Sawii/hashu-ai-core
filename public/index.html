@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HASHU AI - Autonomous Software Core</title>
+    <title>HASHU AI - Autonomous Direct Core</title>
     <style>
         :root {
             --bg-dark: #06020d;
@@ -14,7 +14,7 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text-light); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        header { background: var(--panel-dark); padding: 20px; text-align: center; border-bottom: 2px solid var(--purple-neon); box-shadow: 0 0 20px rgba(123, 44, 191, 0.4); position: relative; }
+        header { background: var(--panel-dark); padding: 20px; text-align: center; border-bottom: 2px solid var(--purple-neon); box-shadow: 0 0 20px rgba(123, 44, 191, 0.4); }
         header h1 { font-size: 1.8rem; font-weight: 800; color: #fff; text-shadow: 0 0 10px var(--cyan-neon); letter-spacing: 2px; }
         header p { font-size: 0.8rem; color: var(--cyan-neon); text-transform: uppercase; margin-top: 5px; }
         .chat-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: radial-gradient(circle at center, #130a24 0%, var(--bg-dark) 100%); }
@@ -33,7 +33,7 @@
 
     <header>
         <h1>HASHU AI</h1>
-        <p>Vercel Autonomous Mainframe • BY MR HASHUU</p>
+        <p>Direct Matrix Mainframe • BY MR HASHUU</p>
     </header>
 
     <div class="chat-container" id="chat-container">
@@ -50,6 +50,10 @@
         const userInput = document.getElementById("user-input");
         const sendBtn = document.getElementById("send-btn");
 
+        // Direct Token Configuration
+        const token = "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";
+        const modelUrl = "https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-3B-Instruct";
+
         async function handleSend() {
             const text = userInput.value.trim();
             if (!text) return;
@@ -60,21 +64,37 @@
             userInput.disabled = true;
             sendBtn.disabled = true;
 
+            const prompt = `<|begin_of_text|><|start_header_id|>system<|end_header_id|>\nYou are Hashu AI, a hyper-intelligent, elite, and luxury AI assistant created and owned by MR HASHUU. You speak with high authority, deep technical knowledge, and absolute precision. Support both English and Sinhala perfectly.<|eot_id|><|start_header_id|>user<|end_header_id|>\n${text}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n`;
+
             try {
-                const response = await fetch("/api/chat", {
+                // Direct Fetch from browser to Hugging Face
+                const response = await fetch(modelUrl, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: text })
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        inputs: prompt,
+                        parameters: {
+                            max_new_tokens: 500,
+                            temperature: 0.7,
+                            return_full_text: false
+                        }
+                    })
                 });
 
                 const data = await response.json();
-                if(data.reply) {
-                    appendMessage("ai", data.reply);
+
+                if (Array.isArray(data) && data[0] && data[0].generated_text) {
+                    appendMessage("ai", data[0].generated_text.trim());
+                } else if (data.error) {
+                    appendMessage("ai", "[CORE ERROR]: " + data.error);
                 } else {
-                    appendMessage("ai", "[SYSTEM ERROR]: Mainframe calculation error.");
+                    appendMessage("ai", "[SYSTEM ERROR]: Core calculation overload. Try again.");
                 }
             } catch (e) {
-                appendMessage("ai", "[CRITICAL ERROR]: Core lost connection to Vercel backend.");
+                appendMessage("ai", "[CRITICAL ERROR]: Core lost direct quantum connection.");
             }
 
             userInput.disabled = false;
@@ -94,4 +114,4 @@
         userInput.addEventListener("keypress", (e) => { if (e.key === "Enter") handleSend(); });
     </script>
 </body>
-  </html>
+</html>
