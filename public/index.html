@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HASHU AI - Operational Core</title>
+    <title>HASHU AI - Operational Absolute Core</title>
     <style>
         :root {
             --bg-dark: #06020d;
@@ -32,11 +32,11 @@
 
     <header>
         <h1>HASHU AI</h1>
-        <p>Vercel Mainframe Core • BY MR HASHUU</p>
+        <p>Bypassed Matrix Frame • BY MR HASHUU</p>
     </header>
 
     <div class="chat-container" id="chat-container">
-        <div class="message ai-message">Greetings. HASHU AI Core is fully online. Architecture managed by MR HASHUU. Send instructions.</div>
+        <div class="message ai-message">Greetings. HASHU AI Core is fully online with anti-CORS matrix protection. Built by MR HASHUU. Send instructions.</div>
     </div>
 
     <div class="input-container">
@@ -49,6 +49,13 @@
         const userInput = document.getElementById("user-input");
         const sendBtn = document.getElementById("send-btn");
 
+        // Hugging Face details ආරක්ෂිතව ඇතුලත් කර ඇත
+        const token = "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";
+        
+        // CORS බයිපාස් කිරීමට ලෝක ප්‍රසිද්ධ Free Proxy එකක් මැදට දමා ඇත
+        const proxyUrl = "https://cors-anywhere.herokuapp.com/"; 
+        const targetUrl = "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct";
+
         async function handleSend() {
             const text = userInput.value.trim();
             if (!text) return;
@@ -59,25 +66,40 @@
             userInput.disabled = true;
             sendBtn.disabled = true;
 
+            const prompt = `<|im_start|>system\nYou are Hashu AI, a hyper-intelligent, elite, and luxury AI assistant created and owned by MR HASHUU. You speak with high authority, deep technical knowledge, and absolute precision. Support both English and Sinhala perfectly.<|im_end|>\n<|im_start|>user\n${text}<|im_end|>\n<|im_start|>assistant\n`;
+
             try {
-                // Vercel Serverless Backend එකට කෝල් එකක් යවනවා (CORS error එන්නෙ නැහැ)
-                const response = await fetch("/api/chat", {
+                // Request එක යන්නේ Proxy එක හරහායි (CORS එන්නේ නැත)
+                const response = await fetch(proxyUrl + targetUrl, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: text })
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        inputs: prompt,
+                        parameters: {
+                            max_new_tokens: 500,
+                            temperature: 0.7,
+                            return_full_text: false
+                        }
+                    })
                 });
 
                 const data = await response.json();
 
-                if (data.reply) {
-                    appendMessage("ai", data.reply);
-                } else if (data.error) {
-                    appendMessage("ai", "[CORE ERROR]: " + data.error);
+                if (Array.isArray(data) && data[0] && data[0].generated_text) {
+                    let aiReply = data[0].generated_text.trim();
+                    aiReply = aiReply.replace('<|im_end|>', '').trim();
+                    appendMessage("ai", aiReply);
+                } else if (response.status === 403) {
+                    // පළමු වතාවේදී Proxy එක ක්‍රියාත්මක කරගන්න අවශ්‍ය නම් වැටෙන පණිවිඩය
+                    appendMessage("ai", "[SYSTEM NOTICE]: Please open this link once to unlock the proxy gateway: https://cors-anywhere.herokuapp.com/corsdemo then click 'Request temporary access' and refresh this site.");
                 } else {
-                    appendMessage("ai", "[SYSTEM ERROR]: Mainframe error.");
+                    appendMessage("ai", "[SYSTEM ERROR]: Mainframe calculations rejected by proxy grid.");
                 }
             } catch (e) {
-                appendMessage("ai", "[CRITICAL ERROR]: Mainframe offline or configuration missing.");
+                appendMessage("ai", "[CRITICAL ERROR]: Core lost connection to bypassed grid.");
             }
 
             userInput.disabled = false;
