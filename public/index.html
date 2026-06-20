@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HASHU AI - Autonomous Software Core</title>
+    <style>
+        :root {
+            --bg-dark: #06020d;
+            --panel-dark: #0f071f;
+            --purple-neon: #7B2CBF;
+            --cyan-neon: #00F5FF;
+            --text-light: #e2dbf0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-light); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        header { background: var(--panel-dark); padding: 20px; text-align: center; border-bottom: 2px solid var(--purple-neon); box-shadow: 0 0 20px rgba(123, 44, 191, 0.4); position: relative; }
+        header h1 { font-size: 1.8rem; font-weight: 800; color: #fff; text-shadow: 0 0 10px var(--cyan-neon); letter-spacing: 2px; }
+        header p { font-size: 0.8rem; color: var(--cyan-neon); text-transform: uppercase; margin-top: 5px; }
+        .chat-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: radial-gradient(circle at center, #130a24 0%, var(--bg-dark) 100%); }
+        .message { max-width: 80%; padding: 14px 18px; border-radius: 12px; line-height: 1.5; font-size: 0.95rem; animation: fadeIn 0.3s ease; white-space: pre-wrap; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .user-message { background: linear-gradient(135deg, var(--purple-neon), #5a189a); color: #fff; align-self: flex-end; box-shadow: 0 4px 15px rgba(123, 44, 191, 0.4); }
+        .ai-message { background: var(--panel-dark); align-self: flex-start; border: 1px solid rgba(0, 245, 255, 0.2); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); }
+        .input-container { padding: 20px; background: var(--panel-dark); border-top: 2px solid var(--cyan-neon); display: flex; gap: 10px; }
+        input { flex: 1; background: #000; border: 1px solid var(--purple-neon); padding: 15px; border-radius: 8px; color: #fff; font-size: 1rem; outline: none; }
+        input:focus { border-color: var(--cyan-neon); box-shadow: 0 0 10px rgba(0, 245, 255, 0.3); }
+        button { background: linear-gradient(135deg, var(--cyan-neon), #00bfff); color: #000; border: none; padding: 0 25px; border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+        button:disabled { background: #22153c; color: #554477; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>HASHU AI</h1>
+        <p>Vercel Autonomous Mainframe • BY MR HASHUU</p>
+    </header>
+
+    <div class="chat-container" id="chat-container">
+        <div class="message ai-message">Greetings. HASHU AI Core is fully online on Vercel infrastructure. Built by MR HASHUU. How can I assist you today?</div>
+    </div>
+
+    <div class="input-container">
+        <input type="text" id="user-input" placeholder="Type your instruction...">
+        <button id="send-btn">Send</button>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById("chat-container");
+        const userInput = document.getElementById("user-input");
+        const sendBtn = document.getElementById("send-btn");
+
+        async function handleSend() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            userInput.value = "";
+            appendMessage("user", text);
+
+            userInput.disabled = true;
+            sendBtn.disabled = true;
+
+            try {
+                const response = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: text })
+                });
+
+                const data = await response.json();
+                if(data.reply) {
+                    appendMessage("ai", data.reply);
+                } else {
+                    appendMessage("ai", "[SYSTEM ERROR]: Mainframe calculation error.");
+                }
+            } catch (e) {
+                appendMessage("ai", "[CRITICAL ERROR]: Core lost connection to Vercel backend.");
+            }
+
+            userInput.disabled = false;
+            sendBtn.disabled = false;
+            userInput.focus();
+        }
+
+        function appendMessage(sender, text) {
+            const msgDiv = document.createElement("div");
+            msgDiv.classList.add("message", sender === "user" ? "user-message" : "ai-message");
+            msgDiv.innerText = text;
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        sendBtn.addEventListener("click", handleSend);
+        userInput.addEventListener("keypress", (e) => { if (e.key === "Enter") handleSend(); });
+    </script>
+</body>
+  </html>
