@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-    // CORS configuration
+    // CORS Headers සෙට් කිරීම (බ්‍රවුසර් එකෙන් එන රික්වෙස්ට් බ්ලොක් නොවීම සඳහා)
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -13,21 +13,14 @@ export default async function handler(req, res) {
     }
 
     const { message } = req.body;
-    if (!message) {
-        return res.status(400).json({ error: 'Message is required' });
-    }
+    
+    const token = "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";
+    const modelUrl = "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct";
 
-    // Token and Endpoint Configurations
-    const token = process.env.HF_TOKEN || "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";
-    // සර්වර් එක හැමතිස්සෙම 100% වැඩ කරන Meta Llama 3.2 මොඩලය
-    const modelUrl = "https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-3B-Instruct";
-
-    // System Prompt Sequence for MR HASHUU
-    const prompt = `<|begin_of_text|><|start_header_id|>system<|end_header_id|>\nYou are Hashu AI, a hyper-intelligent, elite, and luxury AI assistant created and owned by MR HASHUU. You speak with high authority, deep technical knowledge, and absolute precision. Support both English and Sinhala perfectly.<|eot_id|><|start_header_id|>user<|end_header_id|>\n${message}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n`;
+    const prompt = `<|im_start|>system\nYou are Hashu AI, a hyper-intelligent, elite, and luxury AI assistant created and owned by MR HASHUU. You speak with high authority, deep technical knowledge, and absolute precision. Support both English and Sinhala perfectly.<|im_end|>\n<|im_start|>user\n${message}<|im_end|>\n<|im_start|>assistant\n`;
 
     try {
-        // Direct Native Fetch to Hugging Face
-        const hfResponse = await fetch(modelUrl, {
+        const response = await fetch(modelUrl, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -43,18 +36,18 @@ export default async function handler(req, res) {
             })
         });
 
-        const data = await hfResponse.json();
+        const data = await response.json();
 
         if (Array.isArray(data) && data[0] && data[0].generated_text) {
             let reply = data[0].generated_text.trim();
+            reply = reply.replace('<|im_end|>', '').trim();
             return res.status(200).json({ reply });
         } else if (data.error) {
-            return res.status(500).json({ error: `Hugging Face Core Error: ${data.error}` });
+            return res.status(500).json({ error: data.error });
         } else {
-            return res.status(500).json({ error: 'Unexpected response layout from calculation core.' });
+            return res.status(500).json({ error: 'Mainframe calculation layout error.' });
         }
-
     } catch (error) {
-        return res.status(500).json({ error: 'Hashu AI Core Lost Connection to Mainframe.' });
+        return res.status(500).json({ error: 'Backend failed to connect to Hugging Face.' });
     }
 }
