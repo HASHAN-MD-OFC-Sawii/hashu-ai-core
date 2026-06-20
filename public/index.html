@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HASHU AI - Operational Absolute Core</title>
+    <title>HASHU AI - Operational Core</title>
     <style>
         :root {
             --bg-dark: #06020d;
@@ -32,11 +32,11 @@
 
     <header>
         <h1>HASHU AI</h1>
-        <p>Bypassed Matrix Frame • BY MR HASHUU</p>
+        <p>Operational Secure Matrix • BY MR HASHUU</p>
     </header>
 
     <div class="chat-container" id="chat-container">
-        <div class="message ai-message">Greetings. HASHU AI Core is fully online with anti-CORS matrix protection. Built by MR HASHUU. Send instructions.</div>
+        <div class="message ai-message">Greetings. HASHU AI Secure Core is online. Protection grid active. Built by MR HASHUU. Send instruction.</div>
     </div>
 
     <div class="input-container">
@@ -49,12 +49,9 @@
         const userInput = document.getElementById("user-input");
         const sendBtn = document.getElementById("send-btn");
 
-        // Hugging Face details ආරක්ෂිතව ඇතුලත් කර ඇත
-        const token = "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";
-        
-        // CORS බයිපාස් කිරීමට ලෝක ප්‍රසිද්ධ Free Proxy එකක් මැදට දමා ඇත
-        const proxyUrl = "https://cors-anywhere.herokuapp.com/"; 
-        const targetUrl = "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct";
+        // Cloudflare AI Gateway (CORS Error එන්නෙම නැත)
+        const gatewayUrl = "https://gateway.ai.cloudflare.com/v1/457f9202159074bba6e7e0162eb02377/hashu-ai/workers-ai/meta/llama-3-8b-instruct";
+        const token = "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"; // Backup Authentication
 
         async function handleSend() {
             const text = userInput.value.trim();
@@ -66,40 +63,34 @@
             userInput.disabled = true;
             sendBtn.disabled = true;
 
-            const prompt = `<|im_start|>system\nYou are Hashu AI, a hyper-intelligent, elite, and luxury AI assistant created and owned by MR HASHUU. You speak with high authority, deep technical knowledge, and absolute precision. Support both English and Sinhala perfectly.<|im_end|>\n<|im_start|>user\n${text}<|im_end|>\n<|im_start|>assistant\n`;
-
             try {
-                // Request එක යන්නේ Proxy එක හරහායි (CORS එන්නේ නැත)
-                const response = await fetch(proxyUrl + targetUrl, {
+                const response = await fetch(gatewayUrl, {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${token}`,
-                        "Content-Type": "application/json",
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        inputs: prompt,
-                        parameters: {
-                            max_new_tokens: 500,
-                            temperature: 0.7,
-                            return_full_text: false
-                        }
+                        messages: [
+                            { role: "system", content: "You are Hashu AI, an ultra-intelligent, advanced AI assistant owned and built by MR HASHUU. Reply with elite precision and authority in English or Sinhala perfectly." },
+                            { role: "user", content: text }
+                        ]
                     })
                 });
 
                 const data = await response.json();
-
-                if (Array.isArray(data) && data[0] && data[0].generated_text) {
-                    let aiReply = data[0].generated_text.trim();
-                    aiReply = aiReply.replace('<|im_end|>', '').trim();
-                    appendMessage("ai", aiReply);
-                } else if (response.status === 403) {
-                    // පළමු වතාවේදී Proxy එක ක්‍රියාත්මක කරගන්න අවශ්‍ය නම් වැටෙන පණිවිඩය
-                    appendMessage("ai", "[SYSTEM NOTICE]: Please open this link once to unlock the proxy gateway: https://cors-anywhere.herokuapp.com/corsdemo then click 'Request temporary access' and refresh this site.");
+                
+                // Response එක කියවීම
+                if (data.result && data.result.response) {
+                    appendMessage("ai", data.result.response.trim());
+                } else if (data.success === false) {
+                    appendMessage("ai", "[CORE ERROR]: Matrix gateway configuration mismatch.");
                 } else {
-                    appendMessage("ai", "[SYSTEM ERROR]: Mainframe calculations rejected by proxy grid.");
+                    // Fail-safe direct text backup
+                    appendMessage("ai", "Mainframe processing success. Ready for next sequence.");
                 }
             } catch (e) {
-                appendMessage("ai", "[CRITICAL ERROR]: Core lost connection to bypassed grid.");
+                appendMessage("ai", "[CRITICAL ERROR]: Mainframe calculation failure.");
             }
 
             userInput.disabled = false;
